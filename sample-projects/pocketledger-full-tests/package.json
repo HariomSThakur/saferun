@@ -1,0 +1,12 @@
+{
+  "name": "pocketledger-demo-node",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:unit": "node --test tests-node/unit.test.js",
+    "test:integration": "node --test tests-node/integration.test.js",
+    "test:system": "node --test tests-node/system.test.js",
+    "test:e2e": "node --test tests-node/e2e.test.js"
+  }
+}

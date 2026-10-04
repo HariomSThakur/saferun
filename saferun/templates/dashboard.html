@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}My scans · SafeRun{% endblock %}
+{% block content %}
+<section class="page-heading"><div><p class="eyebrow">YOUR LOCAL WORKSPACE</p><h1>Repository checks</h1><p class="lede">Upload a ZIP or choose a project folder, review the planned checks, and get a report you can understand.</p></div><div class="heading-badge"><span class="pulse-dot"></span> Local mode</div></section>
+{% if error %}<div class="alert alert-error" role="alert">{{ error }}</div>{% endif %}
+{% if request.query_params.get('cleanup') == 'pending' %}<div class="alert alert-error" role="alert">SafeRun could not confirm removal of the temporary upload. The saved scan remains in your history; cleanup will be retried at next startup.</div>{% endif %}
+<section class="upload-panel">
+  <div class="section-title"><div><p class="eyebrow">NEW SCAN</p><h2>Choose a project</h2></div><span class="step-label">01 / 03</span></div>
+  <div class="notice {% if capability.available %}notice-success{% else %}notice-warn{% endif %}"><span aria-hidden="true">{% if capability.available %}●{% else %}◇{% endif %}</span><div><strong>{% if capability.available %}Docker is reachable{% else %}Static checks are available{% endif %}</strong><p>{{ capability.message }}{% if not capability.available %} Test, lint, type, and build commands will be marked blocked until Docker is ready.{% endif %}</p></div></div>
+  <form id="upload-form" method="post" action="/scans" enctype="multipart/form-data" class="upload-form">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <div class="upload-options">
+      <label class="file-picker" for="archive"><span class="upload-icon" aria-hidden="true">↑</span><span><strong>Choose a ZIP archive</strong><small>Upload an existing repository ZIP</small></span><span class="button button-secondary">Browse ZIP</span><input id="archive" class="visually-hidden" type="file" name="archive" accept=".zip,application/zip"></label>
+      <label class="file-picker" for="project-files"><span class="upload-icon" aria-hidden="true">▦</span><span><strong>Choose a project folder</strong><small>Subfolders are kept; Git metadata, installed packages, build outputs, and caches are skipped</small></span><span class="button button-secondary">Browse folder</span><input id="project-files" class="visually-hidden" type="file" name="project_files" webkitdirectory directory multiple></label>
+    </div>
+    <p id="selected-upload" class="selected-upload" aria-live="polite">No project selected yet.</p>
+    <p id="upload-error" class="alert alert-error upload-error" role="alert" hidden></p>
+  <p class="selected-upload">SafeRun won’t run project code on your computer.</p>
+  <div class="run-mode-grid"><article class="run-mode-card"><p class="eyebrow">STANDARD CHECKS</p><h3>Inspect repository</h3><p>Review static checks and the project’s configured test commands.</p><button id="upload-submit" class="button button-secondary" name="scan_mode" value="standard" type="submit">Inspect repository</button></article><article class="run-mode-card run-mode-full"><p class="eyebrow">UNIT · INTEGRATION · SYSTEM · END-TO-END</p><h3>Run full test suite</h3><p>Look for separate test suites declared by recognized folders or scripts, then run every supported suite SafeRun finds.</p><button class="button button-primary" name="scan_mode" value="full_tests" type="submit">Upload project and run tests <span aria-hidden="true">→</span></button></article></div>
+  <p class="full-test-help">Upload the whole project as a ZIP or folder. A single source file usually does not include the test setup needed for these test types.</p>
+  </form>
+  <div class="limit-row"><span>25 MiB upload limit</span><span>5,000 files max</span><span>100 MiB extracted ZIP limit</span><span>Broad project detection</span></div>
+</section>
+<section class="history-section">
+  <div class="section-title"><div><p class="eyebrow">YOUR REPORTS</p><h2>Recent scans</h2></div><span class="count-pill">{{ scans|length }} total</span></div>
+  {% if scans %}<div class="scan-list">
+    {% for scan in scans %}
+    {% set project = scan.project_json|from_json %}
+    <article class="scan-row"><div class="scan-symbol">{% if 'Python' in project.languages %}Py{% elif 'JavaScript' in project.languages or 'TypeScript' in project.languages %}JS{% else %}PR{% endif %}</div><div class="scan-main"><a class="scan-title" href="{% if scan.status == 'planned' %}/scans/{{ scan.id }}/plan{% else %}/scans/{{ scan.id }}{% endif %}">{{ project.languages|join(', ') }} project</a><p>{{ project.manifests|join(', ') if project.manifests else 'No known manifest' }} <span class="sep">·</span> {{ scan.created_at[:16] }}</p></div><span class="status status-{{ scan.status }}">{{ scan.status|replace('_',' ') }}</span><a class="row-arrow" aria-label="Open scan" href="{% if scan.status == 'planned' %}/scans/{{ scan.id }}/plan{% else %}/scans/{{ scan.id }}{% endif %}">→</a></article>
+    {% endfor %}
+  </div>{% else %}<div class="empty-state"><span class="empty-icon">⌁</span><h3>No scans yet</h3><p>Your reports will appear here after you inspect a repository.</p></div>{% endif %}
+</section>
+<aside class="privacy-note"><span class="privacy-icon">◈</span><p><strong>Your repository remains yours.</strong> Source and raw run output are temporary. SafeRun keeps only a sanitized report in your account history.</p></aside>
+{% endblock %}

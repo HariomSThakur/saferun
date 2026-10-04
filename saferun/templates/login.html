@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{% if admin %}Admin sign in{% else %}Sign in{% endif %} · SafeRun{% endblock %}
+{% block content %}
+<section class="auth-layout">
+  <div class="auth-copy">
+    <p class="eyebrow">LOCAL REPOSITORY CHECKS</p>
+    <h1>Know what ran.<br><span>Know what didn’t.</span></h1>
+    <p class="lede">Review a clear, bounded report for your project. Source stays temporary, and project commands run only in an isolated Docker container.</p>
+    <div class="trust-row"><span class="trust-icon">✓</span><span>No AI key or paid service</span></div>
+    <div class="trust-row"><span class="trust-icon">✓</span><span>Local SQLite account and report history</span></div>
+  </div>
+  <div class="auth-card">
+    <div class="card-heading"><p class="eyebrow">{% if admin %}ADMIN AREA{% else %}WELCOME BACK{% endif %}</p><h2>{% if admin %}Administrator sign in{% else %}Sign in to SafeRun{% endif %}</h2><p>Use the account registered on this computer.</p></div>
+    {% if error %}<div class="alert alert-error" role="alert">{{ error }}</div>{% endif %}
+    <form method="post" action="{% if admin %}/admin/login{% else %}/login{% endif %}" class="stack-form">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <label for="email">Email address</label><input id="email" name="email" type="email" autocomplete="username" required maxlength="254" value="{{ email or '' }}">
+      <label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required maxlength="128">
+      <button class="button button-primary button-wide" type="submit">{% if admin %}Sign in as admin{% else %}Sign in{% endif %}</button>
+    </form>
+    {% if admin %}<p class="form-note">Admin accounts are created from the local CLI, not through sign up.</p><a class="text-link" href="/login">Regular user sign in →</a>
+    {% else %}<p class="form-note">New to SafeRun? <a href="/register">Create an account</a></p><a class="text-link" href="/admin/login">Administrator sign in →</a>{% endif %}
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>{% block title %}SafeRun{% endblock %}</title>
+  <link rel="stylesheet" href="/static/app.css">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="SafeRun home"><span class="brand-mark">S</span><span>SafeRun</span></a>
+    {% if user is defined and user %}
+    <nav class="nav" aria-label="Main navigation">
+      {% if user.role == 'admin' %}
+      <a href="/admin/runs">Run status</a><a href="/admin/accounts">Accounts</a>
+      {% else %}<a href="/dashboard">My scans</a>{% endif %}
+      <span class="user-chip">{{ user.email }}</span>
+      <form action="/logout" method="post" class="inline-form"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="button button-quiet" type="submit">Sign out</button></form>
+    </nav>
+    {% endif %}
+  </header>
+  <main class="page-shell">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="footer"><span>SafeRun runs locally on this computer.</span><span>No API key or paid service required.</span></footer>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>

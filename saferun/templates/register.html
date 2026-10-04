@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Create account · SafeRun{% endblock %}
+{% block content %}
+<section class="auth-layout">
+  <div class="auth-copy"><p class="eyebrow">YOUR WORKSPACE, ON YOUR COMPUTER</p><h1>Start with a<br><span>safer review.</span></h1><p class="lede">SafeRun checks the project signals and test setup in a repository, then shows exactly which checks ran, failed, or were unavailable.</p><div class="trust-row"><span class="trust-icon">✓</span><span>Private, owner-only scan history</span></div><div class="trust-row"><span class="trust-icon">✓</span><span>Source files are temporary and removed after a run</span></div></div>
+  <div class="auth-card">
+    <div class="card-heading"><p class="eyebrow">CREATE A LOCAL ACCOUNT</p><h2>Get started</h2><p>Accounts stay in this app’s local SQLite database.</p></div>
+    {% if error %}<div class="alert alert-error" role="alert">{{ error }}</div>{% endif %}
+    <form method="post" action="/register" class="stack-form">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <label for="email">Email address</label><input id="email" name="email" type="email" autocomplete="email" required maxlength="254" value="{{ email or '' }}">
+      <label for="password">Password</label><input id="password" name="password" type="password" autocomplete="new-password" required minlength="12" maxlength="128" aria-describedby="password-help"><small id="password-help" class="field-help">Use 12–128 characters.</small>
+      <button class="button button-primary button-wide" type="submit">Create account</button>
+    </form>
+    <p class="form-note">Already have an account? <a href="/login">Sign in</a></p>
+  </div>
+</section>
+{% endblock %}

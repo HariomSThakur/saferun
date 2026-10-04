@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Scan report · SafeRun{% endblock %}
+{% block head %}{% if status in ['queued','running'] %}<meta http-equiv="refresh" content="4">{% endif %}{% endblock %}
+{% block content %}
+<a class="back-link" href="/dashboard">← Back to scans</a>
+<section class="page-heading"><div><p class="eyebrow">STEP 03 · SCAN REPORT</p><h1>{{ project.languages|join(', ') }} project</h1><p class="lede">{{ project.manifests|join(' · ') if project.manifests else 'No common manifest found' }} <span class="sep">·</span> {{ created_at[:16] }}</p></div><span class="status status-{{ status }}">{{ status|replace('_',' ') }}</span></section>
+{% if status in ['queued','running'] %}<div class="progress-panel"><span class="spinner" aria-hidden="true"></span><div><h2>{% if status == 'queued' %}Your scan is queued{% else %}Checks are running{% endif %}</h2><p>This page refreshes as the local checks finish. Keep SafeRun open.</p></div></div>
+{% elif report %}
+<section class="report-summary"><div><p class="eyebrow">SUMMARY</p><h2>{{ report.summary }}</h2><p>{{ report.coverage_note }}</p></div><div class="counts-grid">{% for label in ['passed','failed','blocked','skipped','error'] %}<div class="count-card"><strong>{{ report.counts.get(label, 0) }}</strong><span class="status status-{{ label }}">{{ label }}</span></div>{% endfor %}</div></section>
+<section class="checks-section"><div class="section-title"><div><p class="eyebrow">EVIDENCE</p><h2>Check results</h2></div></div>
+  <div class="check-list">{% for check in report.checks %}<article class="result-card"><div class="result-top"><div class="check-copy"><div class="check-heading"><h3>{{ check.title }}</h3><span class="check-id">{{ check.check_id }}</span></div><p>{{ check.summary }}</p></div><span class="status status-{{ check.status }}">{{ check.status }}</span></div>
+    {% if check.evidence %}<ul class="evidence-list">{% for item in check.evidence %}<li><code>{{ item.file }}</code>{% if item.line %}<span>line {{ item.line }}</span>{% endif %}<span>{{ item.kind or item.name or item.message or '' }}</span>{% if item.confidence %}<span class="tag">{{ item.confidence }} confidence</span>{% endif %}</li>{% endfor %}</ul>{% endif %}
+    {% if check.output_excerpt %}<details class="output-details"><summary>Bounded command output</summary><pre>{{ check.output_excerpt }}</pre></details>{% endif %}
+  </article>{% endfor %}</div>
+</section>
+{% else %}<div class="empty-state"><h2>Report unavailable</h2><p>SafeRun did not retain a report for this scan.</p></div>{% endif %}
+{% if report %}<section class="report-footer"><div><strong>{% if report.source_cleanup == 'removed' %}Temporary source removed{% elif report.source_cleanup == 'pending' %}Temporary source cleanup pending{% else %}Temporary source cleanup status unavailable{% endif %}</strong><p>{% if report.source_cleanup == 'removed' %}SafeRun confirmed deletion of the extracted project workspace when the scan ended.{% elif report.source_cleanup == 'pending' %}SafeRun could not confirm removal. It will retry at the next local app startup.{% else %}SafeRun has no cleanup confirmation recorded for this report.{% endif %}</p></div><form action="/scans/{{ scan_id }}/delete" method="post" data-confirm="Delete this saved report permanently?"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="button button-danger-quiet button-small" type="submit">Delete report</button></form></section>{% endif %}
+{% endblock %}
